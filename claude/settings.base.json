@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": ["Read(./.env)", "Read(./.env.*)"]
+  },
+  "hooks": {
+    "SessionStart":     [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event SessionStart" }] }],
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event UserPromptSubmit" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event Notification" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event Stop" }] }],
+    "SubagentStop":     [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event SubagentStop" }] }],
+    "SessionEnd":       [{ "hooks": [{ "type": "command", "command": "{{CONVEYER_DIR}}/hooks/catapult-event SessionEnd" }] }]
+  }
+}

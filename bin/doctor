@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Check that conveyer is installed correctly and catapult is reachable.
+# shellcheck disable=SC2015
+set -uo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fail=0
+ok()   { printf '  ok    %s\n' "$*"; }
+bad()  { printf '  FAIL  %s\n' "$*"; fail=1; }
+info() { printf '  note  %s\n' "$*"; }
+
+[ "$(readlink "$HOME/.pi/agent/AGENTS.md" 2>/dev/null)" = "$DIR/AGENTS.md" ] && ok "pi AGENTS.md linked" || bad "pi AGENTS.md not linked (run bin/install)"
+grep -q "$DIR/AGENTS.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null && ok "claude CLAUDE.md imports AGENTS.md" || bad "CLAUDE.md missing"
+for s in "$DIR"/skills/*/; do
+    n="$(basename "$s")"
+    [ -f "$HOME/.agents/skills/$n/SKILL.md" ] && [ -f "$HOME/.claude/skills/$n/SKILL.md" ] && ok "skill $n" || bad "skill $n not linked"
+done
+for f in "$HOME/.claude/settings.json" "$HOME/.pi/agent/settings.json"; do
+    node -e 'JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"))' "$f" 2>/dev/null && ok "valid JSON: $f" || bad "invalid/missing: $f"
+done
+grep -q catapult-event "$HOME/.claude/settings.json" 2>/dev/null && ok "claude hooks wired" || bad "claude hooks missing"
+[ -x "$DIR/hooks/catapult-event" ] && ok "hook script executable" || bad "hook script not executable"
+[ -e "$HOME/.pi/agent/extensions/catapult-status.ts" ] && ok "pi extension linked" || bad "pi extension missing"
+command -v jq >/dev/null && ok "jq present" || bad "jq missing (hook needs it)"
+
+url="${CATAPULT_INGEST_URL:-}"
+[ -z "$url" ] && [ -r "$HOME/.config/conveyer/env" ] && url="$(sed -n 's/^CATAPULT_INGEST_URL="\(.*\)"$/\1/p' "$HOME/.config/conveyer/env")"
+if [ -z "$url" ]; then
+    info "CATAPULT_INGEST_URL unset: hooks are no-ops on this host"
+elif curl -s -o /dev/null --max-time 1 -X POST -H 'content-type: application/json' -d '{"harness":"doctor","event":"ping"}' "$url"; then
+    ok "catapult ingest reachable at $url"
+else
+    info "catapult ingest not reachable at $url (hooks fail open)"
+fi
+exit "$fail"

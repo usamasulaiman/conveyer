@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Report a Claude Code hook event to catapult. Fail open: never blocks, never errors.
+#   catapult-event <EventName>   (hook JSON on stdin)
+# Endpoint: $CATAPULT_INGEST_URL, else ~/.config/conveyer/env. Unset → no-op.
+event="${1:-unknown}"
+payload="$(cat 2>/dev/null)"
+
+if [ -z "${CATAPULT_INGEST_URL:-}" ] && [ -r "$HOME/.config/conveyer/env" ]; then
+    # shellcheck disable=SC1091
+    . "$HOME/.config/conveyer/env" 2>/dev/null
+fi
+[ -n "${CATAPULT_INGEST_URL:-}" ] || exit 0
+command -v curl >/dev/null 2>&1 || exit 0
+command -v jq >/dev/null 2>&1 || exit 0
+
+body="$(printf '%s' "$payload" | jq -c --arg event "$event" --arg ts "$(date -u +%FT%TZ)" '
+    {harness: "claude", event: $event, session_id: .session_id, cwd: .cwd,
+     transcript_path: .transcript_path, ts: $ts, payload: .}' 2>/dev/null)" || exit 0
+[ -n "$body" ] || exit 0
+
+curl -s -o /dev/null --max-time 0.3 --connect-timeout 0.2 \
+    -H 'content-type: application/json' -d "$body" "$CATAPULT_INGEST_URL" >/dev/null 2>&1 || true
+exit 0

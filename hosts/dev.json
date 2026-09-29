@@ -1,0 +1,5 @@
+{
+  "env": { "CATAPULT_INGEST_URL": "http://127.0.0.1:7700/ingest" },
+  "claude": { "sandbox": { "enabled": true } },
+  "pi": {}
+}
