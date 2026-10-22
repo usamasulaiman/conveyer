@@ -1,6 +1,6 @@
 ---
 name: refine-ticket
-description: Refine a backlog ticket so it is ready to implement. Use when grooming issues in Linear, GitHub or Jira.
+description: Refine a backlog ticket so it is ready to implement. Use when grooming backlog issues (GitHub Issues or any tracker).
 ---
 
 # Refine a ticket
