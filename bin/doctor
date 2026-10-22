@@ -21,6 +21,8 @@ grep -q catapult-event "$HOME/.claude/settings.json" 2>/dev/null && ok "claude h
 [ -x "$DIR/hooks/catapult-event" ] && ok "hook script executable" || bad "hook script not executable"
 [ -e "$HOME/.pi/agent/extensions/catapult-status.ts" ] && ok "pi extension linked" || bad "pi extension missing"
 command -v jq >/dev/null && ok "jq present" || bad "jq missing (hook needs it)"
+[ "$(git -C "$DIR" config core.hooksPath 2>/dev/null)" = ".githooks" ] && ok "secret-scan pre-commit enabled" || bad "pre-commit not enabled (run bin/install)"
+command -v gitleaks >/dev/null && ok "gitleaks present" || info "gitleaks missing: commits are not scanned for secrets"
 
 url="${CATAPULT_INGEST_URL:-}"
 [ -z "$url" ] && [ -r "$HOME/.config/conveyer/env" ] && url="$(sed -n 's/^CATAPULT_INGEST_URL="\(.*\)"$/\1/p' "$HOME/.config/conveyer/env")"

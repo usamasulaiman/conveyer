@@ -7,6 +7,7 @@
 # - settings  → ~/.claude/settings.json, ~/.pi/agent/settings.json (generated: base ⊕ host overlay)
 # - pi extension → ~/.pi/agent/extensions/ (symlink)
 # - host env  → ~/.config/conveyer/env (CATAPULT_INGEST_URL etc.)
+# - repo hooks → core.hooksPath=.githooks (gitleaks pre-commit)
 # A generated file that was edited by hand since the last install is backed up as *.bak.<ts>.
 set -euo pipefail
 
@@ -87,6 +88,12 @@ say "pi extensions"
 for e in "$DIR"/pi/extensions/*.ts; do
     link "$e" "$HOME/.pi/agent/extensions/$(basename "$e")"
 done
+
+say "repo hooks"
+# Secret scan before each commit to this (public) repo.
+if [ "$(git -C "$DIR" config core.hooksPath 2>/dev/null)" != ".githooks" ]; then
+    say "  set core.hooksPath"; run git -C "$DIR" config core.hooksPath .githooks
+fi
 
 say "host env"
 # shellcheck disable=SC2016
