@@ -11,3 +11,7 @@ npm test               # hook + merge tests (node:test)
 Generated files (`~/.claude/settings.json`, `~/.claude/CLAUDE.md`, `~/.pi/agent/settings.json`, `~/.config/conveyer/env`) are overwritten on install; a hand-edited one is backed up first. Skills and `AGENTS.md` are symlinks into this repo.
 
 Commits are scanned for secrets by `.githooks/pre-commit` (gitleaks); `bin/install` enables it for this clone.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
